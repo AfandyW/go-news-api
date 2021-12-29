@@ -41,6 +41,7 @@
 ### `[put]/api/tags{tags_id}` - Update Tags by Id
 - Request Body
     - name: `string|required`
+    ```json
     {
         "name": "Crypto"
     }
