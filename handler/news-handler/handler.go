@@ -44,7 +44,7 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.SendWithData(w, http.StatusCreated, "Success Create New Tags", tags)
+	handler.SendWithData(w, http.StatusCreated, "Success Create New News", tags)
 	return
 }
 
@@ -123,6 +123,6 @@ func (h Handler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.SendNoData(w, http.StatusOK, "Success Delete News")
+	handler.SendNoData(w, http.StatusOK, "Success Deleted News")
 	return
 }

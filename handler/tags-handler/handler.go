@@ -86,7 +86,7 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.SendWithData(w, http.StatusCreated, "Success Create New Tags", tags)
+	handler.SendWithData(w, http.StatusCreated, "Success Update Tags", tags)
 	return
 }
 
