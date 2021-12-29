@@ -6,7 +6,11 @@ import (
 	"gorm.io/gorm"
 )
 
-var status = []string{"draft", "deleted", "publish"}
+var (
+	draft   = "draft"
+	deleted = "deleted"
+	publish = "publish"
+)
 
 type News struct {
 	gorm.Model
@@ -24,10 +28,8 @@ func (news *News) Validate() error {
 		return errors.New("status cannot be null")
 	}
 
-	for _, v := range status {
-		if news.Status != v {
-			return errors.New(`Status can only "draft", "deleted", "publish"`)
-		}
+	if news.Status != draft && news.Status != deleted && news.Status != publish {
+		return errors.New(`Status can only "draft", "deleted", "publish"`)
 	}
 
 	return nil
@@ -45,16 +47,6 @@ func (news *News) Update(tags []*Tags, name, status string) error {
 	if tags != nil {
 		news.Tags = tags
 	}
-
-	// if tags != nil {
-	// 	for _, v := range news.Tags {
-	// 		for _, t := range tags {
-	// 			if v.Name != t.Name {
-	// 				news.Tags = append(news.Tags, t)
-	// 			}
-	// 		}
-	// 	}
-	// }
 
 	return nil
 }

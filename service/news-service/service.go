@@ -120,7 +120,12 @@ func (serv *service) CreateNewNews(ctx context.Context, tags []string, name, sta
 		Tags:   rTags,
 	}
 
-	news, err := serv.Repo.Create(ctx, news)
+	err := news.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	news, err = serv.Repo.Create(ctx, news)
 
 	if err != nil {
 		return nil, err
