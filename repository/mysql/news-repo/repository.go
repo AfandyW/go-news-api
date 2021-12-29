@@ -5,19 +5,16 @@ import (
 	"go-news-api/domain/entities"
 	"go-news-api/domain/news"
 
-	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
 type repository struct {
-	DB    *gorm.DB
-	Cache *redis.Client
+	DB *gorm.DB
 }
 
-func NewRepository(db *gorm.DB, cache *redis.Client) news.IRepository {
+func NewRepository(db *gorm.DB) news.IRepository {
 	return &repository{
-		DB:    db,
-		Cache: cache,
+		DB: db,
 	}
 }
 

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"go-news-api/config"
 	tagshandler "go-news-api/handler/tags-handler"
 	newsrepo "go-news-api/repository/mysql/news-repo"
 	tagsrepo "go-news-api/repository/mysql/tags-repo"
+	"go-news-api/repository/redisc"
 	newsservice "go-news-api/service/news-service"
 	tagsservice "go-news-api/service/tags-service"
 
@@ -13,6 +15,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-redis/redis/v8"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
@@ -29,10 +32,16 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	rC := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf(`%s:%s`, cfg.Cache.Host, cfg.Cache.Port),
+		Password: "",
+		DB:       int(cfg.Cache.Db),
+	})
+
+	rC.FlushDB(context.Background())
+
 	sqlDB, err := db.DB()
 	defer sqlDB.Close()
-
-	cache := config.InitClient(cfg.Cache)
 
 	// Migrate
 	err = config.Migrate(db)
@@ -41,12 +50,16 @@ func main() {
 	}
 
 	// Register all repo
-	tagsRepo := tagsrepo.NewRepository(db, cache)
-	newsRepo := newsrepo.NewRepository(db, cache)
+	tagsRepo := tagsrepo.NewRepository(db)
+	newsRepo := newsrepo.NewRepository(db)
+
+	// Register cache
+	cacheTags := redisc.NewRedisCache(cfg.Cache)
+	cacheNews := redisc.NewRedisCach(cfg.Cache)
 
 	// Register all service
-	tagsService := tagsservice.NewService(tagsRepo)
-	newsService := newsservice.NewService(newsRepo, tagsRepo)
+	tagsService := tagsservice.NewService(tagsRepo, cacheTags)
+	newsService := newsservice.NewService(newsRepo, tagsRepo, cacheNews)
 
 	//Handler
 
@@ -71,6 +84,7 @@ func main() {
 		Addr:    endpoint,
 	}
 
-	fmt.Println("Server running on ", cfg.API.Host, ":", cfg.API.Port, cache, db)
+	fmt.Println("Server running on ", cfg.API.Host, ":", cfg.API.Port)
+
 	server.ListenAndServe()
 }

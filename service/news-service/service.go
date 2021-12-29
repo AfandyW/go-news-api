@@ -3,6 +3,7 @@ package newsservice
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go-news-api/domain/entities"
 	"go-news-api/domain/news"
 	"go-news-api/domain/tags"
@@ -11,27 +12,36 @@ import (
 type service struct {
 	Repo     news.IRepository
 	TagsRepo tags.IRepository
+	Cache    news.ICacheRepository
 }
 
-func NewService(repo news.IRepository, tagsrepo tags.IRepository) news.IService {
+func NewService(repo news.IRepository, tagsrepo tags.IRepository, cache news.ICacheRepository) news.IService {
 	return &service{
 		Repo:     repo,
 		TagsRepo: tagsrepo,
+		Cache:    cache,
 	}
 }
 
 func (serv *service) ListNews(ctx context.Context) ([]entities.NewsDTO, error) {
-	result, err := serv.Repo.List(ctx)
+	keys := "ListNews"
+	news, _ := serv.Cache.List(ctx, keys)
 
-	if err != nil {
-		return nil, err
-	}
+	if news == nil {
+		result, err := serv.Repo.List(ctx)
 
-	news := []entities.NewsDTO{}
+		if err != nil {
+			return nil, err
+		}
 
-	for _, v := range result {
-		new := v.ToDTO()
-		news = append(news, new)
+		newsDto := []entities.NewsDTO{}
+
+		for _, v := range result {
+			new := v.ToDTO()
+			newsDto = append(newsDto, new)
+		}
+		serv.Cache.Set(ctx, keys, newsDto)
+		news = newsDto
 	}
 
 	return news, nil
@@ -67,18 +77,27 @@ func (serv *service) CreateNewNews(ctx context.Context, tags []string, name, sta
 	}
 
 	newsDto := news.ToDTO()
+	serv.Cache.FlushAll(ctx)
 
 	return &newsDto, err
 }
 func (serv *service) UpdateNews(ctx context.Context, id uint64, tags []string, name, status string) (*entities.NewsDTO, error) {
-	result, err := serv.Repo.GetById(ctx, id)
+	keys := fmt.Sprintf("n%d", id)
+	news, _ := serv.Cache.Get(ctx, keys)
 
-	if err != nil {
-		return nil, err
-	}
+	if news == nil {
+		result, err := serv.Repo.GetById(ctx, id)
 
-	if result.ID == 0 {
-		return nil, errors.New("News Not Found")
+		if err != nil {
+			return nil, err
+		}
+
+		if result.ID == 0 {
+			return nil, errors.New("News Not Found")
+		}
+
+		serv.Cache.Set(ctx, keys, result)
+		news = result
 	}
 
 	rTags := []*entities.Tags{}
@@ -96,35 +115,43 @@ func (serv *service) UpdateNews(ctx context.Context, id uint64, tags []string, n
 		rTags = append(rTags, tag)
 	}
 
-	result.Update(rTags, name, status)
+	news.Update(rTags, name, status)
 
-	news, err := serv.Repo.Update(ctx, id, result)
+	news, err := serv.Repo.Update(ctx, id, news)
 
 	if err != nil {
 		return nil, err
 	}
 
 	newsDto := news.ToDTO()
+	serv.Cache.FlushAll(ctx)
 
 	return &newsDto, err
 }
 
 func (serv *service) DeleteNews(ctx context.Context, id uint64) error {
-	result, err := serv.Repo.GetById(ctx, id)
+	keys := fmt.Sprintf("n%d", id)
+	news, _ := serv.Cache.Get(ctx, keys)
+
+	if news == nil {
+		result, err := serv.Repo.GetById(ctx, id)
+
+		if err != nil {
+			return err
+		}
+
+		if result.ID == 0 {
+			return errors.New("News Not Found")
+		}
+	}
+
+	err := serv.Repo.Delete(ctx, id)
 
 	if err != nil {
 		return err
 	}
 
-	if result.ID == 0 {
-		return errors.New("News Not Found")
-	}
-
-	err = serv.Repo.Delete(ctx, id)
-
-	if err != nil {
-		return err
-	}
+	serv.Cache.FlushAll(ctx)
 
 	return nil
 }

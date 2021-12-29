@@ -3,7 +3,6 @@ package tagsrepo
 import (
 	"context"
 
-	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 
 	"go-news-api/domain/entities"
@@ -11,14 +10,12 @@ import (
 )
 
 type repository struct {
-	DB    *gorm.DB
-	Cache *redis.Client
+	DB *gorm.DB
 }
 
-func NewRepository(db *gorm.DB, cache *redis.Client) tags.IRepository {
+func NewRepository(db *gorm.DB) tags.IRepository {
 	return &repository{
-		DB:    db,
-		Cache: cache,
+		DB: db,
 	}
 }
 

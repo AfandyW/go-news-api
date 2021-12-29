@@ -28,8 +28,10 @@ func LoadConfig() (*Config, error) {
 	}
 	redisDb, _ := strconv.ParseInt(os.Getenv("REDIS_DB"), 10, 32)
 	cache := RedisCache{
-		Host: os.Getenv("REDIS_HOST"),
-		Db:   redisDb,
+		Host:    os.Getenv("REDIS_HOST"),
+		Db:      redisDb,
+		Expires: 1,
+		Port:    os.Getenv("REDIS_PORT"),
 	}
 
 	return &Config{

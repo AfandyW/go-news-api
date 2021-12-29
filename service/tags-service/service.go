@@ -3,32 +3,48 @@ package tagsservice
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go-news-api/domain/entities"
 	"go-news-api/domain/tags"
 )
 
 type service struct {
-	Repo tags.IRepository
+	Repo  tags.IRepository
+	Cache tags.ICacheRepository
 }
 
-func NewService(repo tags.IRepository) tags.IService {
+func NewService(repo tags.IRepository, cache tags.ICacheRepository) tags.IService {
 	return &service{
-		Repo: repo,
+		Repo:  repo,
+		Cache: cache,
 	}
 }
 
 func (serv *service) ListTags(ctx context.Context) (*[]entities.TagsDTO, error) {
-	result, err := serv.Repo.List(ctx)
 
-	tags := []entities.TagsDTO{}
+	tags, _ := serv.Cache.List(ctx, "listTags")
 
-	for _, v := range result {
-		tag := v.ToDTO()
-		tags = append(tags, tag)
+	if tags == nil {
+		fmt.Println("ambil dari db")
+		result, err := serv.Repo.List(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		tagsDto := []entities.TagsDTO{}
+
+		for _, v := range result {
+			tag := v.ToDTO()
+			tagsDto = append(tagsDto, tag)
+		}
+
+		tags = tagsDto
+
+		err = serv.Cache.Set(ctx, "listTags", tagsDto)
 	}
 
-	// redis cache
-	return &tags, err
+	return &tags, nil
 }
 
 func (serv *service) CreateNewTags(ctx context.Context, t *entities.Tags) (*entities.TagsDTO, error) {
@@ -40,23 +56,35 @@ func (serv *service) CreateNewTags(ctx context.Context, t *entities.Tags) (*enti
 
 	tags := result.ToDTO()
 
+	serv.Cache.FlushAll(ctx)
 	return &tags, err
 }
 func (serv *service) UpdateTags(ctx context.Context, id uint64, name string) (*entities.TagsDTO, error) {
-	tag, err := serv.Repo.GetById(ctx, id)
+	keys := fmt.Sprintf("t%d", id)
+	tag, _ := serv.Cache.Get(ctx, keys)
 
-	if err != nil {
-		return nil, err
-	}
+	if tag == nil {
 
-	if tag.ID == 0 {
-		return nil, errors.New("Tags Not Found")
+		result, err := serv.Repo.GetById(ctx, id)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if result.ID == 0 {
+			return nil, errors.New("Tags Not Found")
+		}
+
+		serv.Cache.Set(ctx, keys, result)
+		tag = result
 	}
 
 	tag.Update(name)
 
 	result, err := serv.Repo.Update(ctx, tag)
 	tags := result.ToDTO()
+
+	serv.Cache.FlushAll(ctx)
 	return &tags, err
 }
 
@@ -72,6 +100,8 @@ func (serv *service) DeleteTags(ctx context.Context, id uint64) error {
 	}
 
 	err = serv.Repo.Delete(ctx, id)
+
+	serv.Cache.FlushAll(ctx)
 
 	return err
 }

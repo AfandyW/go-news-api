@@ -13,3 +13,10 @@ type IRepository interface {
 	Update(ctx context.Context, tags *entities.Tags) (*entities.Tags, error)
 	Delete(ctx context.Context, id uint64) error
 }
+
+type ICacheRepository interface {
+	Set(ctx context.Context, key string, value interface{}) error
+	List(ctx context.Context, key string) ([]entities.TagsDTO, error)
+	Get(ctx context.Context, key string) (*entities.Tags, error)
+	FlushAll(ctx context.Context)
+}
