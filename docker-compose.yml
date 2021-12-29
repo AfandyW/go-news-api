@@ -1,0 +1,36 @@
+version: '3.5'
+
+services:
+  mysql:
+    image: mysql:5.7 
+    container_name: news-api
+    command: mysqld --user=root
+    volumes:
+      - ./sql:/var/lib/mysql/
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+
+  redis:
+    container_name: redis-news
+    image: redis:6
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+    volumes:
+      - ./conf/redis.conf:/usr/local/etc/redis/redis.conf

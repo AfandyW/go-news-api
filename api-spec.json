@@ -1,0 +1,410 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "News API",
+        "description": "API Spec for News APP",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:5000/api"
+        }
+    ],
+    "paths": {
+        "/news":{
+            "get":{
+                "tags": ["News"],
+                "summary": "list all news",
+                "description": "List all News",
+                "responses": {
+                    "200":{
+                        "description": "Success get all News",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "code":{
+                                            "type": "number",
+                                            "example": 200
+                                        },
+                                        "status":{
+                                            "type": "string",
+                                            "example": "Success get all news"
+                                        },
+                                        "data":{
+                                            "type": "array",
+                                            "items":{
+                                                "type": "object",
+                                                "properties": {
+                                                    "id":{
+                                                        "type": "number",
+                                                        "example": 1
+                                                    },
+                                                    "name":{
+                                                        "type": "string",
+                                                        "example": "Bukele and the volcano: El Salvador doubles-down on Bitcoin"
+                                                    },
+                                                    "status":{
+                                                        "type": "string",
+                                                        "example": "draft"
+                                                    },
+                                                    "tags":{
+                                                        "type": "array",
+                                                        "items":{
+                                                            "type": "string"
+                                                        },
+                                                        "example":[
+                                                            "investment", "crypto"
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post":{
+                "tags": ["News"],
+                "summary": "create new news",
+                "requestBody":{
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Bukele and the volcano: El Salvador doubles-down on Bitcoin"
+                                    },
+                                    "status":{
+                                        "type": "string",
+                                        "example": "draft"
+                                    },
+                                    "tags":{
+                                        "type": "array",
+                                        "items":{
+                                            "type": "string",
+                                            "example": [
+                                                "investment", "crypto"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201":{
+                        "description": "Success create news",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "code":{
+                                            "type": "number",
+                                            "example": 201
+                                        },
+                                        "status":{
+                                            "type": "string",
+                                            "example": "Success create news"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/news/{newsId}":{
+            "put":{
+                "tags": ["News"],
+                "summary": "update new news",
+                "parameters": [
+                    {
+                        "name": "newsId",
+                        "in": "path",
+                        "description": "News ID",
+                        "schema":{
+                            "type": "number"
+                        },
+                        "required": true
+                    }
+                ],
+                "requestBody":{
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Bukele and the volcano: El Salvador doubles-down on Bitcoin"
+                                    },
+                                    "status":{
+                                        "type": "string",
+                                        "example": "draft"
+                                    },
+                                    "tags":{
+                                        "type": "array",
+                                        "items":{
+                                            "type": "string",
+                                            "example": [
+                                                "investment", "crypto"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201":{
+                        "description": "Success update news",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "code":{
+                                            "type": "number",
+                                            "example": 201
+                                        },
+                                        "status":{
+                                            "type": "string",
+                                            "example": "Success update news"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete":{
+                "tags": ["News"],
+                "summary": "Delete news by ID",
+                "description": "Delete news by ID",
+                "parameters": [
+                    {
+                        "name": "newsId",
+                        "in": "path",
+                        "description": "News ID",
+                        "schema":{
+                            "type": "number"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204":{
+                        "description": "Success deleted news",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "code":{
+                                            "type": "number",
+                                            "example": 204
+                                        },
+                                        "status":{
+                                            "type": "string",
+                                            "example": "Success deleted news"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tags":{
+            "get":{
+                "tags": ["Tags / Topic"],
+                "summary": "list all tags",
+                "description": "List all tags",
+                "responses": {
+                    "200":{
+                        "description": "Success get all tags",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "code":{
+                                            "type": "number",
+                                            "example": 200
+                                        },
+                                        "status":{
+                                            "type": "string",
+                                            "example": "Success get all tags"
+                                        },
+                                        "data":{
+                                            "type": "array",
+                                            "items":{
+                                                "type": "object",
+                                                "properties": {
+                                                    "id":{
+                                                        "type": "number",
+                                                        "example": 1
+                                                    },
+                                                    "name":{
+                                                        "type": "string",
+                                                        "example": "Investment"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post":{
+                "tags": ["Tags / Topic"],
+                "summary": "create new tags",
+                "requestBody":{
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Investment"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201":{
+                        "description": "Success create tags",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "code":{
+                                            "type": "number",
+                                            "example": 201
+                                        },
+                                        "status":{
+                                            "type": "string",
+                                            "example": "Success create tags"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tags/{tagsId}":{
+            "put":{
+                "tags": ["Tags / Topic"],
+                "summary": "update tags",
+                "parameters": [
+                    {
+                        "name": "tagsId",
+                        "in": "path",
+                        "description": "Tags ID",
+                        "schema":{
+                            "type": "number"
+                        },
+                        "required": true
+                    }
+                ],
+                "requestBody":{
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Investment"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201":{
+                        "description": "Success update tags",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "code":{
+                                            "type": "number",
+                                            "example": 201
+                                        },
+                                        "status":{
+                                            "type": "string",
+                                            "example": "Success update tags"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete":{
+                "tags": ["Tags / Topic"],
+                "summary": "Delete tags by ID",
+                "description": "Delete tags by ID",
+                "parameters": [
+                    {
+                        "name": "tagsId",
+                        "in": "path",
+                        "description": "Tags ID",
+                        "schema":{
+                            "type": "number"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204":{
+                        "description": "Success deleted tags",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "code":{
+                                            "type": "number",
+                                            "example": 204
+                                        },
+                                        "status":{
+                                            "type": "string",
+                                            "example": "Success deleted tags"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
