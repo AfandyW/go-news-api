@@ -39,3 +39,22 @@ func (t *Tags) ToDTO() TagsDTO {
 		Name: t.Name,
 	}
 }
+
+type TagsDTONews struct {
+	Id   uint   `json:"id"`
+	Name string `json:"name"`
+	News []NewsDTOTags
+}
+
+func (t *Tags) ToDTOWithNews() TagsDTONews {
+	NewsDTO := []NewsDTOTags{}
+	for _, v := range t.News {
+		NewsDTO = append(NewsDTO, v.ToDTOTags())
+	}
+
+	return TagsDTONews{
+		Id:   t.Model.ID,
+		Name: t.Name,
+		News: NewsDTO,
+	}
+}

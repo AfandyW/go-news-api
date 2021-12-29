@@ -79,3 +79,17 @@ func (news *News) ToDTO() NewsDTO {
 		Tags:   tagsDTO,
 	}
 }
+
+type NewsDTOTags struct {
+	Id     uint
+	Name   string
+	Status string
+}
+
+func (news *News) ToDTOTags() NewsDTOTags {
+	return NewsDTOTags{
+		Id:     news.Model.ID,
+		Name:   news.Name,
+		Status: news.Status,
+	}
+}

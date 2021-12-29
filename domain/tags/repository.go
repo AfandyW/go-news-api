@@ -7,6 +7,7 @@ import (
 
 type IRepository interface {
 	List(ctx context.Context) ([]*entities.Tags, error)
+	ListByTopic(ctx context.Context, topic string) ([]*entities.Tags, error)
 	GetById(ctx context.Context, id uint64) (*entities.Tags, error)
 	GetByName(ctx context.Context, name string) (*entities.Tags, error)
 	Create(ctx context.Context, tags *entities.Tags) (*entities.Tags, error)

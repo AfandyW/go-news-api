@@ -7,6 +7,7 @@ import (
 
 type IRepository interface {
 	List(ctx context.Context) ([]*entities.News, error)
+	ListByStatus(ctx context.Context, status string) ([]*entities.News, error)
 	GetById(ctx context.Context, id uint64) (*entities.News, error)
 	Create(ctx context.Context, news *entities.News) (*entities.News, error)
 	Update(ctx context.Context, id uint64, news *entities.News) (*entities.News, error)
@@ -16,6 +17,7 @@ type IRepository interface {
 type ICacheRepository interface {
 	Set(ctx context.Context, key string, value interface{}) error
 	List(ctx context.Context, key string) ([]entities.NewsDTO, error)
+	ListTopic(ctx context.Context, key string) ([]entities.TagsDTONews, error)
 	Get(ctx context.Context, key string) (*entities.News, error)
 	FlushAll(ctx context.Context)
 }
