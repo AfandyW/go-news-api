@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"go-news-api/config"
 	tagshandler "go-news-api/handler/tags-handler"
+	newsrepo "go-news-api/repository/mysql/news-repo"
 	tagsrepo "go-news-api/repository/mysql/tags-repo"
+	newsservice "go-news-api/service/news-service"
 	tagsservice "go-news-api/service/tags-service"
 
+	newsshandler "go-news-api/handler/news-handler"
 	"log"
 	"net/http"
 
@@ -39,9 +42,11 @@ func main() {
 
 	// Register all repo
 	tagsRepo := tagsrepo.NewRepository(db, cache)
+	newsRepo := newsrepo.NewRepository(db, cache)
 
 	// Register all service
 	tagsService := tagsservice.NewService(tagsRepo)
+	newsService := newsservice.NewService(newsRepo, tagsRepo)
 
 	//Handler
 
@@ -57,6 +62,7 @@ func main() {
 	apiroute := route.PathPrefix("/api").Subrouter()
 
 	tagshandler.NewHandler(apiroute, tagsService)
+	newsshandler.NewHandler(apiroute, newsService)
 
 	endpoint := fmt.Sprintf("%s:%s", cfg.API.Host, cfg.API.Port)
 
