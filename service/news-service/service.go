@@ -47,6 +47,56 @@ func (serv *service) ListNews(ctx context.Context) ([]entities.NewsDTO, error) {
 	return news, nil
 }
 
+func (serv *service) ListNewsByStatus(ctx context.Context, status string) ([]entities.NewsDTO, error) {
+	keys := "ListNews" + status
+	news, _ := serv.Cache.List(ctx, keys)
+
+	if news == nil {
+		result, err := serv.Repo.ListByStatus(ctx, status)
+
+		if err != nil {
+			return nil, err
+		}
+
+		newsDto := []entities.NewsDTO{}
+
+		for _, v := range result {
+			new := v.ToDTO()
+			newsDto = append(newsDto, new)
+		}
+		serv.Cache.Set(ctx, keys, newsDto)
+		news = newsDto
+	}
+
+	return news, nil
+}
+
+func (serv *service) ListNewsByTopic(ctx context.Context, topic string) ([]entities.TagsDTONews, error) {
+	keys := "listNews" + topic
+	tags, _ := serv.Cache.ListTopic(ctx, keys)
+
+	if tags == nil {
+		result, err := serv.TagsRepo.ListByTopic(ctx, topic)
+
+		if err != nil {
+			return nil, err
+		}
+
+		tagsDto := []entities.TagsDTONews{}
+
+		for _, v := range result {
+			tag := v.ToDTOWithNews()
+			tagsDto = append(tagsDto, tag)
+		}
+
+		tags = tagsDto
+
+		err = serv.Cache.Set(ctx, "listTags", tagsDto)
+	}
+
+	return tags, nil
+}
+
 func (serv *service) CreateNewNews(ctx context.Context, tags []string, name, status string) (*entities.NewsDTO, error) {
 	rTags := []*entities.Tags{}
 

@@ -51,6 +51,32 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
+	topic := r.URL.Query()["topic"]
+
+	if topic != nil {
+		news, err := h.service.ListNewsByTopic(ctx, topic[0])
+		if err != nil {
+			handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		handler.SendWithData(w, http.StatusOK, "Success List News By Topic", news)
+		return
+	}
+
+	status := r.URL.Query()["status"]
+
+	if status != nil {
+		news, err := h.service.ListNewsByStatus(ctx, status[0])
+		if err != nil {
+			handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		handler.SendWithData(w, http.StatusOK, "Success List News By Status", news)
+		return
+	}
+
 	news, err := h.service.ListNews(ctx)
 	if err != nil {
 		handler.SendNoData(w, http.StatusInternalServerError, err.Error())

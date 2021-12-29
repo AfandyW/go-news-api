@@ -29,6 +29,16 @@ func (repo *repository) List(ctx context.Context) ([]*entities.Tags, error) {
 	return tags, nil
 }
 
+func (repo *repository) ListByTopic(ctx context.Context, topic string) ([]*entities.Tags, error) {
+	var tags []*entities.Tags
+	err := repo.DB.Debug().Where("name = ?", topic).Order("created_at desc").Preload("News").Find(&tags).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return tags, nil
+}
+
 func (repo *repository) GetById(ctx context.Context, id uint64) (*entities.Tags, error) {
 	var tags *entities.Tags
 	err := repo.DB.Debug().Where("id = ?", id).Find(&tags, id).Error

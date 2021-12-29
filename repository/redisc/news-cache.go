@@ -70,6 +70,25 @@ func (c *newsCache) List(ctx context.Context, key string) ([]entities.NewsDTO, e
 	return news, nil
 }
 
+func (c *newsCache) ListTopic(ctx context.Context, key string) ([]entities.TagsDTONews, error) {
+	client := c.getClientN()
+
+	val, err := client.Get(ctx, key).Result()
+
+	if err != nil {
+		return nil, err
+	}
+
+	news := []entities.TagsDTONews{}
+
+	err = json.Unmarshal([]byte(val), &news)
+	if err != nil {
+		return nil, err
+	}
+
+	return news, nil
+}
+
 func (c *newsCache) Get(ctx context.Context, key string) (*entities.News, error) {
 	client := c.getClientN()
 
