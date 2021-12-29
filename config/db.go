@@ -28,7 +28,7 @@ func InitDB(param DBConfig) (*gorm.DB, error) {
 
 	syncDBOnce.Do(func() {
 		if db == nil {
-			dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+			dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
 				param.User, param.Password, param.Host, param.Port, param.Name)
 			db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
@@ -52,7 +52,8 @@ func InitDB(param DBConfig) (*gorm.DB, error) {
 }
 
 func Migrate(db *gorm.DB) error {
-	err := db.Debug().AutoMigrate(&entities.News{}, &entities.Tags{})
+	err := db.Debug().Migrator().DropTable(&entities.News{}, &entities.Tags{})
+	err = db.Debug().AutoMigrate(&entities.News{}, &entities.Tags{})
 
 	return err
 }
