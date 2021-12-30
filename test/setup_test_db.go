@@ -3,9 +3,11 @@ package test
 import (
 	"fmt"
 	"go-news-api/domain/entities"
+	"os"
 	"sync"
 	"time"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -26,13 +28,15 @@ type DBConfig struct {
 func NewDB() (*gorm.DB, error) {
 	var err error
 	// err = godotenv.Load()
+	err = godotenv.Load(os.ExpandEnv("../../../.env"))
+	fmt.Println(122, os.Getenv("TEST_DB_HOST"))
 
 	param := DBConfig{
-		Host:     "localhost",
-		Port:     "3306",
-		User:     "root",
-		Password: "root",
-		Name:     "go_news_test",
+		Host:     os.Getenv("TEST_DB_HOST"),
+		Port:     os.Getenv("TEST_DB_PORT"),
+		User:     os.Getenv("TEST_DB_USER"),
+		Password: os.Getenv("TEST_DB_PASSWORD"),
+		Name:     os.Getenv("TEST_DB_NAME"),
 	}
 
 	syncDBOnce.Do(func() {
@@ -59,7 +63,6 @@ func NewDB() (*gorm.DB, error) {
 	Migrate(db)
 	return db, err
 }
-
 
 func Migrate(db *gorm.DB) error {
 	err := db.Migrator().DropTable(&entities.News{}, &entities.Tags{})
