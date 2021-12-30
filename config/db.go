@@ -52,8 +52,8 @@ func InitDB(param DBConfig) (*gorm.DB, error) {
 }
 
 func Migrate(db *gorm.DB) error {
-	err := db.Debug().Migrator().DropTable(&entities.News{}, &entities.Tags{})
-	err = db.Debug().AutoMigrate(&entities.News{}, &entities.Tags{})
+	// err := db.Debug().Migrator().DropTable(&entities.News{}, &entities.Tags{})
+	err := db.Debug().AutoMigrate(&entities.News{}, &entities.Tags{})
 
 	return err
 }
