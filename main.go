@@ -4,20 +4,17 @@ import (
 	"context"
 	"fmt"
 	"go-news-api/config"
-	tagshandler "go-news-api/handler/tags-handler"
-	newsrepo "go-news-api/repository/mysql/news-repo"
-	tagsrepo "go-news-api/repository/mysql/tags-repo"
+	news_mysql "go-news-api/repository/mysql/news"
+	tags_mysql "go-news-api/repository/mysql/tags"
 	"go-news-api/repository/redisc"
-	newsservice "go-news-api/service/news-service"
-	tagsservice "go-news-api/service/tags-service"
+	"go-news-api/route"
+	news_service "go-news-api/service/news"
+	tags_service "go-news-api/service/tags"
 
-	newsshandler "go-news-api/handler/news-handler"
 	"log"
-	"net/http"
 
 	"github.com/go-redis/redis/v8"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -50,41 +47,22 @@ func main() {
 	}
 
 	// Register all repo
-	tagsRepo := tagsrepo.NewRepository(db)
-	newsRepo := newsrepo.NewRepository(db)
+	tagsRepo := tags_mysql.NewRepository(db)
+	newsRepo := news_mysql.NewRepository(db)
 
 	// Register cache
 	cacheTags := redisc.NewRedisCache(cfg.Cache)
 	cacheNews := redisc.NewRedisCach(cfg.Cache)
 
 	// Register all service
-	tagsService := tagsservice.NewService(tagsRepo, cacheTags)
-	newsService := newsservice.NewService(newsRepo, tagsRepo, cacheNews)
+	tagsService := tags_service.NewService(tagsRepo, cacheTags)
+	newsService := news_service.NewService(newsRepo, tagsRepo, cacheNews)
 
-	//Handler
-
-	route := mux.NewRouter()
-
-	// Test Route
-	route.HandleFunc("/ping", func(rw http.ResponseWriter, r *http.Request) {
-		rw.Header().Set("Content-Type", "application/json")
-		rw.Write([]byte("pong"))
-		return
-	}).Methods("GET")
-
-	apiroute := route.PathPrefix("/api").Subrouter()
-
-	tagshandler.NewHandler(apiroute, tagsService)
-	newsshandler.NewHandler(apiroute, newsService)
+	//Handler Route
+	handler := route.NewHandler(newsService, tagsService)
+	route := handler.NewRoute()
 
 	endpoint := fmt.Sprintf("%s:%s", cfg.API.Host, cfg.API.Port)
 
-	server := &http.Server{
-		Handler: route,
-		Addr:    endpoint,
-	}
-
-	fmt.Println("Server running on ", cfg.API.Host, ":", cfg.API.Port)
-
-	server.ListenAndServe()
+	Start(route, endpoint)
 }
