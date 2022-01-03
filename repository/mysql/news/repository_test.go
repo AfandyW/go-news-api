@@ -1,9 +1,9 @@
-package newsrepo
+package news
 
 import (
 	"context"
 	"go-news-api/domain/entities"
-	tagsrepo "go-news-api/repository/mysql/tags-repo"
+	tagsrepo "go-news-api/repository/mysql/tags"
 	"go-news-api/test"
 	"testing"
 

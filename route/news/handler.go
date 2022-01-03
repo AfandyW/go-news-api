@@ -1,9 +1,9 @@
-package newshandler
+package news
 
 import (
 	"context"
 	"go-news-api/domain/news"
-	"go-news-api/handler"
+	"go-news-api/route/util"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -30,21 +30,21 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	var reqBody CreateNewNews
 
-	err := handler.Decode(r, &reqBody)
+	err := util.Decode(r, &reqBody)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusBadRequest, err.Error())
+		util.SendNoData(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	tags, err := h.service.CreateNewNews(ctx, reqBody.Tags, reqBody.Name, reqBody.Status)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+		util.SendNoData(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	handler.SendWithData(w, http.StatusCreated, "Success Create New News", tags)
+	util.SendWithData(w, http.StatusCreated, "Success Create New News", tags)
 	return
 }
 
@@ -56,11 +56,11 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 	if topic != nil {
 		news, err := h.service.ListNewsByTopic(ctx, topic[0])
 		if err != nil {
-			handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+			util.SendNoData(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		handler.SendWithData(w, http.StatusOK, "Success List News By Topic", news)
+		util.SendWithData(w, http.StatusOK, "Success List News By Topic", news)
 		return
 	}
 
@@ -69,21 +69,21 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 	if status != nil {
 		news, err := h.service.ListNewsByStatus(ctx, status[0])
 		if err != nil {
-			handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+			util.SendNoData(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		handler.SendWithData(w, http.StatusOK, "Success List News By Status", news)
+		util.SendWithData(w, http.StatusOK, "Success List News By Status", news)
 		return
 	}
 
 	news, err := h.service.ListNews(ctx)
 	if err != nil {
-		handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+		util.SendNoData(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	handler.SendWithData(w, http.StatusOK, "Success List News", news)
+	util.SendWithData(w, http.StatusOK, "Success List News", news)
 	return
 }
 
@@ -91,38 +91,38 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	var reqBody CreateNewNews
 
-	newsId := handler.GetParams(r, "news_id")
+	newsId := util.GetParams(r, "news_id")
 
-	err := handler.Decode(r, &reqBody)
+	err := util.Decode(r, &reqBody)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusBadRequest, err.Error())
+		util.SendNoData(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	news, err := h.service.UpdateNews(ctx, newsId, reqBody.Tags, reqBody.Name, reqBody.Status)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+		util.SendNoData(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	handler.SendWithData(w, http.StatusCreated, "Success Update News", news)
+	util.SendWithData(w, http.StatusCreated, "Success Update News", news)
 	return
 }
 
 func (h Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
-	newsId := handler.GetParams(r, "news_id")
+	newsId := util.GetParams(r, "news_id")
 
 	err := h.service.DeleteNews(ctx, newsId)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+		util.SendNoData(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	handler.SendNoData(w, http.StatusOK, "Success Deleted News")
+	util.SendNoData(w, http.StatusOK, "Success Deleted News")
 	return
 }

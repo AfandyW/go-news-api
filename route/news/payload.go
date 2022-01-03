@@ -1,4 +1,4 @@
-package newshandler
+package news
 
 type (
 	//handle create

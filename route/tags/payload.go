@@ -1,4 +1,4 @@
-package tagshandler
+package tags
 
 type (
 

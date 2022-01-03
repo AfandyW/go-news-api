@@ -1,11 +1,12 @@
-package tagshandler
+package tags
 
 import (
 	"context"
 	"go-news-api/domain/entities"
 	"go-news-api/domain/tags"
-	"go-news-api/handler"
 	"net/http"
+
+	"go-news-api/route/util"
 
 	"github.com/gorilla/mux"
 )
@@ -31,10 +32,10 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	var reqBody CreateNewTags
 
-	err := handler.Decode(r, &reqBody)
+	err := util.Decode(r, &reqBody)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusBadRequest, err.Error())
+		util.SendNoData(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -45,11 +46,11 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	tags, err := h.service.CreateNewTags(ctx, payload)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+		util.SendNoData(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	handler.SendWithData(w, http.StatusCreated, "Success Create New Tags", tags)
+	util.SendWithData(w, http.StatusCreated, "Success Create New Tags", tags)
 	return
 }
 
@@ -58,11 +59,11 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	tags, err := h.service.ListTags(ctx)
 	if err != nil {
-		handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+		util.SendNoData(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	handler.SendWithData(w, http.StatusOK, "Success List Tags", tags)
+	util.SendWithData(w, http.StatusOK, "Success List Tags", tags)
 	return
 }
 
@@ -70,38 +71,38 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	var reqBody CreateNewTags
 
-	tagsId := handler.GetParams(r, "tags_id")
+	tagsId := util.GetParams(r, "tags_id")
 
-	err := handler.Decode(r, &reqBody)
+	err := util.Decode(r, &reqBody)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusBadRequest, err.Error())
+		util.SendNoData(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	tags, err := h.service.UpdateTags(ctx, tagsId, reqBody.Name)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+		util.SendNoData(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	handler.SendWithData(w, http.StatusCreated, "Success Update Tags", tags)
+	util.SendWithData(w, http.StatusCreated, "Success Update Tags", tags)
 	return
 }
 
 func (h Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
-	tagsId := handler.GetParams(r, "tags_id")
+	tagsId := util.GetParams(r, "tags_id")
 
 	err := h.service.DeleteTags(ctx, tagsId)
 
 	if err != nil {
-		handler.SendNoData(w, http.StatusInternalServerError, err.Error())
+		util.SendNoData(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	handler.SendNoData(w, http.StatusOK, "Success Delete Tags")
+	util.SendNoData(w, http.StatusOK, "Success Delete Tags")
 	return
 }

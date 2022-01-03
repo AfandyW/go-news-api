@@ -1,4 +1,4 @@
-package newsrepo
+package news
 
 import (
 	"context"

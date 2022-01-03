@@ -1,4 +1,4 @@
-package tagsservice
+package tags
 
 import (
 	"context"

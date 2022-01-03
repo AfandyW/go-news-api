@@ -1,4 +1,4 @@
-package tagsrepo
+package tags
 
 import (
 	"context"

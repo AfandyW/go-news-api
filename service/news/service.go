@@ -1,4 +1,4 @@
-package newsservice
+package news
 
 import (
 	"context"
