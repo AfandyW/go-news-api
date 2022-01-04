@@ -21,11 +21,10 @@ func NewService(repo tags.IRepository, cache tags.ICacheRepository) tags.IServic
 }
 
 func (serv *service) ListTags(ctx context.Context) (*[]entities.TagsDTO, error) {
-
-	tags, _ := serv.Cache.List(ctx, "listTags")
+	keys := "listTags"
+	tags, _ := serv.Cache.List(ctx, keys)
 
 	if tags == nil {
-		fmt.Println("ambil dari db")
 		result, err := serv.Repo.List(ctx)
 
 		if err != nil {
@@ -41,7 +40,7 @@ func (serv *service) ListTags(ctx context.Context) (*[]entities.TagsDTO, error) 
 
 		tags = tagsDto
 
-		err = serv.Cache.Set(ctx, "listTags", tagsDto)
+		err = serv.Cache.Set(ctx, "listTags", keys)
 	}
 
 	return &tags, nil
