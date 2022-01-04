@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  api:
+    container_name: go_news_api
+    build: .
+    ports:
+      - 5000:5000
+    restart: always
+    environment:
+      DB_HOST: news-api
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: go_news
+    networks:
+      - go-news-api_default

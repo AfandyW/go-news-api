@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.9'
 
 services:
   mysql:
@@ -16,6 +16,8 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 5s
       retries: 10
+    networks:
+      - go-news-api_default
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -34,3 +36,9 @@ services:
       - 6379:6379
     volumes:
       - ./conf/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - go-news-api_default
+
+networks:
+  go-news-api_default:
+    name: go-news-api_default
