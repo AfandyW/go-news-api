@@ -39,6 +39,10 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err = reqBody.Validate(); err != nil {
+		util.SendNoData(w, http.StatusBadRequest, err.Error())
+	}
+
 	payload := &entities.Tags{
 		Name: reqBody.Name,
 	}

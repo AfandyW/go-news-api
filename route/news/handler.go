@@ -37,6 +37,10 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err = reqBody.Validate(); err != nil {
+		util.SendNoData(w, http.StatusBadRequest, err.Error())
+	}
+
 	tags, err := h.service.CreateNewNews(ctx, reqBody.Tags, reqBody.Name, reqBody.Status)
 
 	if err != nil {

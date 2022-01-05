@@ -1,9 +1,14 @@
 package tags
 
-type (
+import "errors"
 
-	//handle create
-	CreateNewTags struct {
-		Name string `json:"name"`
+type CreateNewTags struct {
+	Name string `json:"name"`
+}
+
+func (v CreateNewTags) Validate() error {
+	if v.Name == "" {
+		return errors.New("name cannot be null")
 	}
-)
+	return nil
+}
