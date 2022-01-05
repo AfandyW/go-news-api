@@ -3,8 +3,6 @@ package redisc
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"go-news-api/config"
 	"go-news-api/domain/entities"
 	"go-news-api/domain/tags"
 	"time"
@@ -13,48 +11,31 @@ import (
 )
 
 type tagsCache struct {
-	Host    string
-	Db      int64
+	Redis   *redis.Client
 	Expires int
-	Port    string
 }
 
-func NewRedisCache(redis config.RedisCache) tags.ICacheRepository {
+func NewRedisTagsCache(redis *redis.Client, redisExpires int) tags.ICacheRepository {
 	return &tagsCache{
-		Host:    redis.Host,
-		Db:      redis.Db,
-		Expires: redis.Expires,
-		Port:    redis.Port,
+		Redis:   redis,
+		Expires: redisExpires,
 	}
 }
 
-func (c *tagsCache) getClient() *redis.Client {
-	address := fmt.Sprintf(`%s:%s`, c.Host, c.Port)
-
-	return redis.NewClient(&redis.Options{
-		Addr:     address,
-		Password: "",
-		DB:       int(c.Db),
-	})
-}
-
 func (c *tagsCache) Set(ctx context.Context, key string, value interface{}) error {
-	client := c.getClient()
 
 	json, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
 
-	client.Set(ctx, key, json, time.Duration(c.Expires)*time.Minute)
+	c.Redis.Set(ctx, key, json, time.Duration(c.Expires)*time.Minute)
 
 	return nil
 }
 
 func (c *tagsCache) List(ctx context.Context, key string) ([]entities.TagsDTO, error) {
-	client := c.getClient()
-
-	val, err := client.Get(ctx, key).Result()
+	val, err := c.Redis.Get(ctx, key).Result()
 
 	if err != nil {
 		return nil, err
@@ -71,9 +52,7 @@ func (c *tagsCache) List(ctx context.Context, key string) ([]entities.TagsDTO, e
 }
 
 func (c *tagsCache) Get(ctx context.Context, key string) (*entities.Tags, error) {
-	client := c.getClient()
-
-	val, err := client.Get(ctx, key).Result()
+	val, err := c.Redis.Get(ctx, key).Result()
 
 	if err != nil {
 		return nil, err
@@ -90,7 +69,5 @@ func (c *tagsCache) Get(ctx context.Context, key string) (*entities.Tags, error)
 }
 
 func (c *tagsCache) FlushAll(ctx context.Context) {
-	client := c.getClient()
-
-	client.FlushAll(ctx)
+	c.Redis.FlushAll(ctx)
 }

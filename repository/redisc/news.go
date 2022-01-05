@@ -3,8 +3,6 @@ package redisc
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"go-news-api/config"
 	"go-news-api/domain/entities"
 	"go-news-api/domain/news"
 	"time"
@@ -13,48 +11,30 @@ import (
 )
 
 type newsCache struct {
-	Host    string
-	Db      int64
+	Redis   *redis.Client
 	Expires int
-	Port    string
 }
 
-func NewRedisCach(redis config.RedisCache) news.ICacheRepository {
+func NewRedisNewsCache(redis *redis.Client, redisExpires int) news.ICacheRepository {
 	return &newsCache{
-		Host:    redis.Host,
-		Db:      redis.Db,
-		Expires: redis.Expires,
-		Port:    redis.Port,
+		Redis:   redis,
+		Expires: redisExpires,
 	}
 }
 
-func (c *newsCache) getClientN() *redis.Client {
-	address := fmt.Sprintf(`%s:%s`, c.Host, c.Port)
-
-	return redis.NewClient(&redis.Options{
-		Addr:     address,
-		Password: "",
-		DB:       int(c.Db),
-	})
-}
-
 func (c *newsCache) Set(ctx context.Context, key string, value interface{}) error {
-	client := c.getClientN()
-
 	json, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
 
-	client.Set(ctx, key, json, time.Duration(c.Expires)*time.Minute)
+	c.Redis.Set(ctx, key, json, time.Duration(c.Expires)*time.Minute)
 
 	return nil
 }
 
 func (c *newsCache) List(ctx context.Context, key string) ([]entities.NewsDTO, error) {
-	client := c.getClientN()
-
-	val, err := client.Get(ctx, key).Result()
+	val, err := c.Redis.Get(ctx, key).Result()
 
 	if err != nil {
 		return nil, err
@@ -71,9 +51,7 @@ func (c *newsCache) List(ctx context.Context, key string) ([]entities.NewsDTO, e
 }
 
 func (c *newsCache) ListTopic(ctx context.Context, key string) ([]entities.TagsDTONews, error) {
-	client := c.getClientN()
-
-	val, err := client.Get(ctx, key).Result()
+	val, err := c.Redis.Get(ctx, key).Result()
 
 	if err != nil {
 		return nil, err
@@ -90,9 +68,7 @@ func (c *newsCache) ListTopic(ctx context.Context, key string) ([]entities.TagsD
 }
 
 func (c *newsCache) Get(ctx context.Context, key string) (*entities.News, error) {
-	client := c.getClientN()
-
-	val, err := client.Get(ctx, key).Result()
+	val, err := c.Redis.Get(ctx, key).Result()
 
 	if err != nil {
 		return nil, err
@@ -109,7 +85,5 @@ func (c *newsCache) Get(ctx context.Context, key string) (*entities.News, error)
 }
 
 func (c *newsCache) FlushAll(ctx context.Context) {
-	client := c.getClientN()
-
-	client.FlushAll(ctx)
+	c.Redis.FlushAll(ctx)
 }

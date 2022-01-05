@@ -13,7 +13,6 @@ import (
 
 	"log"
 
-	"github.com/go-redis/redis/v8"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -29,13 +28,9 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	rC := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf(`%s:%s`, cfg.Cache.Host, cfg.Cache.Port),
-		Password: "",
-		DB:       int(cfg.Cache.Db),
-	})
-
-	rC.FlushDB(context.Background())
+	redis := config.InitRedis(cfg.Cache)
+	defer redis.Close()
+	redis.FlushDB(context.Background())
 
 	sqlDB, err := db.DB()
 	defer sqlDB.Close()
@@ -51,8 +46,8 @@ func main() {
 	newsRepo := news_mysql.NewRepository(db)
 
 	// Register cache
-	cacheTags := redisc.NewRedisCache(cfg.Cache)
-	cacheNews := redisc.NewRedisCach(cfg.Cache)
+	cacheTags := redisc.NewRedisTagsCache(redis, cfg.Cache.Expires)
+	cacheNews := redisc.NewRedisNewsCache(redis, cfg.Cache.Expires)
 
 	// Register all service
 	tagsService := tags_service.NewService(tagsRepo, cacheTags)
